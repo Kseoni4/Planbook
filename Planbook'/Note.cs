@@ -85,5 +85,12 @@ namespace Homework_07
             this.Release = date;
         }
 
+        public void Print()
+        {
+            
+           string cOut = Complete == true ? "Да" : "Нет";
+           Console.WriteLine($"{GameTitle} {Genre} {Platforms} {cOut} {Release}");
+        }
+
     }
 }

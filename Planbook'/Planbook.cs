@@ -72,15 +72,17 @@ namespace Homework_07
         private string Owner { get; set; }
         private DateTime MakeDate { get; set; }
 
-        public Planbook(string owner, DateTime makeDate)
-        {
-            this.Owner = owner;
-            this.MakeDate = makeDate;
-        }
+        private Note[] Notes;
 
         public void CreateNote()
         {
             
+        }
+
+        public void PrintNotes()
+        {
+            Console.WriteLine($"{"Название игры",20} {"Жанр",20} {"Платформы",20} {"Пройдена",20} {"Дата выхода",20}");
+
         }
 
         public void LoadNotes()
@@ -106,6 +108,13 @@ namespace Homework_07
         public void SortNote()
         {
 
+        }
+
+        public Planbook(string owner, DateTime makeDate, params Note[] args)
+        {
+            this.Owner = owner;
+            this.MakeDate = makeDate;
+            Notes = args;
         }
     }
 }
