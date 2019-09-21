@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 #region Задание
 
@@ -69,9 +70,13 @@ namespace Homework_07
 {
     struct Planbook
     {
-        private string Owner { get; set; }
-        private DateTime MakeDate { get; set; }
+        public string Owner { get; set; }
+
+        public DateTime MakeDate { get; set; }
+
         private int index { get; set; }
+
+        private string path;
 
         private Note[] Notes;
 
@@ -83,38 +88,11 @@ namespace Homework_07
             }
         }
 
-        public void CreateNote()
+        public void AddNote(Note _Note)
         {
-            Console.WriteLine();
-
             this.Resize(index >= this.Notes.Length);
-
-            Console.Write("Введите название игры: ");
-
-            string title = Console.ReadLine();
-
-            Console.Write("Введите жанр игры: ");
-
-            string genre = Console.ReadLine();
-
-            Console.Write("Введите платформы: ");
-
-            string platforms = Console.ReadLine();
-
-            Console.Write("Пройденна ли игра? [Y/N]: ");
-
-            bool complete = Console.ReadLine() == "Y" ? true : false;
-
-            Console.Write("Введите дату выхода игры (DD-MM-YYYY): ");
-
-            DateTime date = DateTime.Parse(Console.ReadLine());
-
-            Notes[index] = new Note(title, genre, platforms, complete, date);
-
+            this.Notes[index] = _Note;
             index++;
-
-            Console.WriteLine($"Запись игры {title} создана.");
-
         }
 
         public void PrintNotes()
@@ -124,22 +102,78 @@ namespace Homework_07
             Console.ResetColor();
             for(int i = 0; i < index; i++)
             {
+                Console.Write(i);
                 Notes[i].Print();
             }
         }
 
         public void LoadNotes()
         {
+            using (StreamReader sr = new StreamReader(this.path))
+            {
+                sr.ReadLine();
 
+                while (!sr.EndOfStream)
+                {
+                    string[] line = sr.ReadLine().Split(',');
+
+                    AddNote(new Note(line[0], line[1], line[2], Convert.ToBoolean(line[3]), Convert.ToDateTime(line[4])));
+                }
+            }
         }
 
-        public void SaveNotes()
+        public void SaveNotes(string Path)
         {
+            // File.Create(@"notes.csv");
+
+            Path = $@"{Owner}-notes.csv";
+
+            string temp = String.Format("{0},{1},{2},{3},{4}",
+                                         "Название игры",
+                                          "Жанр",
+                                          "Платформы",
+                                          "Пройдена",
+                                          "Дата выхода");
+            File.AppendAllText(Path, $"{temp}\n");
+
+            for (int i = 0; i < this.index; i++)
+            {
+                temp = String.Format("{0},{1},{2},{3},{4}",
+                                    this.Notes[i].GameTitle,
+                                    this.Notes[i].Genre,
+                                    this.Notes[i].Platforms,
+                                    this.Notes[i].Complete,
+                                    this.Notes[i].Release
+                                    );
+                File.AppendAllText(Path, $"{temp}\n");
+            }
 
         }
 
         public void LoadNotesFromDates()
         {
+            Console.Write("Введите диапазон дат через пробел (DD-MM-YYYY): ");
+            string[] dates = Console.ReadLine().Split(' ');
+
+            using (StreamReader sr = new StreamReader(this.path))
+            {
+                sr.ReadLine();
+
+                while (!sr.EndOfStream)
+                {
+                    string[] line = sr.ReadLine().Split(',');
+
+                    Array.Clear(Notes, 0 ,Notes.Length);
+                    Array.Resize(ref Notes, 1);
+                    index = 0;
+                    
+                    if(Convert.ToDateTime(line[4]) <= Convert.ToDateTime(dates[0]) 
+                       && Convert.ToDateTime(line[4]) >= Convert.ToDateTime(dates[1]))
+                    {
+                        AddNote(new Note(line[0], line[1], line[2], Convert.ToBoolean(line[3]), Convert.ToDateTime(line[4])));
+                    }
+                }
+            }
 
         }
 
@@ -153,12 +187,35 @@ namespace Homework_07
 
         }
 
-        public Planbook(string owner, DateTime makeDate)
+        public void DeleteNote()
+        {
+
+        }
+
+        public int Count { get { return this.index; } }
+
+        private void savePB()
+        {
+            string temp = String.Format("{0},{1},{2},{3}",
+                                        Owner,
+                                        MakeDate,
+                                        index,
+                                        path);
+            File.AppendAllText(path, $"{temp}");
+        }
+
+        public Planbook(string owner, DateTime makeDate, string Path)
         {
             this.Owner = owner;
             this.MakeDate = makeDate;
             this.index = 0;
+            this.path = Path;
             this.Notes = new Note[5];
+            savePB();
+            if (File.Exists($@"{Owner}-notes.csv"))
+            {
+                LoadNotes();
+            }
         }
     }
 }

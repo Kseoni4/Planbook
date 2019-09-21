@@ -69,12 +69,12 @@ namespace Homework_07
 {
     struct Note
     {
-        private string GameTitle { get; set; }
-        private string Genre { get; set; }
-        private string Platforms { get; set; }
-        private bool Complete { get; set; }
-               
-        DateTime Release { get; set; }
+        public string GameTitle { get; set; }
+        public string Genre { get; set; }
+        public string Platforms { get; set; }
+        public bool Complete { get; set; }
+
+        public DateTime Release { get; set; }
 
         public Note(string title, string genre, string platforms, bool complete, DateTime date)
         {
@@ -89,11 +89,11 @@ namespace Homework_07
         {
             
            string cOut = Complete == true ? "Да" : "Нет";
-           Console.Write($"{GameTitle, 20} {Genre, 20} {Platforms, 20}");
+            Console.Write($"{GameTitle, 20} {Genre, 20} {Platforms, 20}");
             Console.ForegroundColor = Complete == true ? ConsoleColor.Green : ConsoleColor.Red;
             Console.Write($" {cOut, 20} ");
             Console.ResetColor();
-            Console.Write($"{Release, 20}\n");
+            Console.Write($"{Release.ToShortDateString(), 20}\n");
         }
 
     }
