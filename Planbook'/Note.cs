@@ -89,7 +89,11 @@ namespace Homework_07
         {
             
            string cOut = Complete == true ? "Да" : "Нет";
-           Console.WriteLine($"{GameTitle} {Genre} {Platforms} {cOut} {Release}");
+           Console.Write($"{GameTitle, 20} {Genre, 20} {Platforms, 20}");
+            Console.ForegroundColor = Complete == true ? ConsoleColor.Green : ConsoleColor.Red;
+            Console.Write($" {cOut, 20} ");
+            Console.ResetColor();
+            Console.Write($"{Release, 20}\n");
         }
 
     }

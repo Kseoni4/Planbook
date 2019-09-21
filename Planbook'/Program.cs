@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -75,7 +76,14 @@ namespace Homework_07
     {
         static void Main(string[] args)
         {
-            
+            Planbook pb = new Planbook("test", DateTime.Now);
+
+            pb.CreateNote();
+            Console.ReadLine();
+            pb.CreateNote();
+            pb.PrintNotes();
+            Console.ReadLine();
+
         }
     }
 }

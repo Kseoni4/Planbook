@@ -71,18 +71,61 @@ namespace Homework_07
     {
         private string Owner { get; set; }
         private DateTime MakeDate { get; set; }
+        private int index { get; set; }
 
         private Note[] Notes;
 
+        private void Resize(bool Flag)
+        {
+            if (Flag)
+            {
+                Array.Resize(ref this.Notes, this.Notes.Length * 2);
+            }
+        }
+
         public void CreateNote()
         {
-            
+            Console.WriteLine();
+
+            this.Resize(index >= this.Notes.Length);
+
+            Console.Write("Введите название игры: ");
+
+            string title = Console.ReadLine();
+
+            Console.Write("Введите жанр игры: ");
+
+            string genre = Console.ReadLine();
+
+            Console.Write("Введите платформы: ");
+
+            string platforms = Console.ReadLine();
+
+            Console.Write("Пройденна ли игра? [Y/N]: ");
+
+            bool complete = Console.ReadLine() == "Y" ? true : false;
+
+            Console.Write("Введите дату выхода игры (DD-MM-YYYY): ");
+
+            DateTime date = DateTime.Parse(Console.ReadLine());
+
+            Notes[index] = new Note(title, genre, platforms, complete, date);
+
+            index++;
+
+            Console.WriteLine($"Запись игры {title} создана.");
+
         }
 
         public void PrintNotes()
         {
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"{"Название игры",20} {"Жанр",20} {"Платформы",20} {"Пройдена",20} {"Дата выхода",20}");
-
+            Console.ResetColor();
+            for(int i = 0; i < index; i++)
+            {
+                Notes[i].Print();
+            }
         }
 
         public void LoadNotes()
@@ -110,11 +153,12 @@ namespace Homework_07
 
         }
 
-        public Planbook(string owner, DateTime makeDate, params Note[] args)
+        public Planbook(string owner, DateTime makeDate)
         {
             this.Owner = owner;
             this.MakeDate = makeDate;
-            Notes = args;
+            this.index = 0;
+            this.Notes = new Note[5];
         }
     }
 }
