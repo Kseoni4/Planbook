@@ -74,20 +74,24 @@ namespace Homework_07
 
         #region Поля структуры ежедневника
 
-        public string Owner { get; set; }
+        public string Owner { get; set; } // Поле владельца ежедневника
 
-        public DateTime MakeDate { get; set; }
+        public DateTime MakeDate { get; set; } // Поле даты создания ежедневника
 
-        private int index { get; set; }
+        private int index { get; set; } // Индекс текущего количества записей
 
-        private string path;
+        private string path; // Путь к файлу данных о ежедневнике
 
-        private Note[] Notes;
+        private Note[] Notes; // Массив объектов вида "заметка"
 
         #endregion
 
         #region Работа с заметками
-
+        /// <summary>
+        /// Общий метод добавления заметки в массив объектов. При необходимости массив расширяет размер, а так же происходит сохранение в csv файл заметок.
+        /// </summary>
+        /// <param name="_Note">Объект заметки, созданный на этапе ввода данных</param>
+        /// <param name="flag">Флаг, что заметка добавляется в ручном режиме и требует сохранения в файл</param>
         public void AddNote(Note _Note, bool flag)
         {
             this.Resize(index >= this.Notes.Length);
@@ -99,7 +103,9 @@ namespace Homework_07
             index++;
             SavePB();
         }
-
+        /// <summary>
+        /// Метод сохранения заметки в csv файл вида Имя_владельца-notes.csv
+        /// </summary>
         public void SaveNote()
         {
             string Path = $@"{Owner}-notes.csv";
@@ -112,7 +118,11 @@ namespace Homework_07
                                     );
             File.AppendAllText(Path, $"{temp}\n");
         }
-
+        /// <summary>
+        /// Метод редактирования поле заметки, в зависимости от выбора.
+        /// </summary>
+        /// <param name="c">Номер поля (от 1 до 5)</param>
+        /// <param name="i">Номер заметки</param>
         public void EditNote(int c, int i)
         {
             string s = "Введите новое значение: ";
@@ -147,7 +157,10 @@ namespace Homework_07
             }
             ResaveAllNotes();
         }
-
+        /// <summary>
+        /// Метод сортировки заметки, в зависимости от выбора поля
+        /// </summary>
+        /// <param name="c">Номер поля заметки (от 1 до 5)</param>
         public void SortNote(int c)
         {
             switch (c)
@@ -179,21 +192,27 @@ namespace Homework_07
                     }
             }
         }
-
+        /// <summary>
+        /// Метод удаления заметки по номеру.
+        /// </summary>
+        /// <param name="idx">Номер заметки</param>
         public void DeleteNote(int idx)
         {
             Array.Clear(Notes, idx - 1, 1);
-            index--;
-            ResaveAllNotes();
+            ReloadNotes();
         }
 
         #endregion
 
         #region Печать заметок
+        /// <summary>
+        /// Метод печати всех заметок на экран
+        /// </summary>
         public void PrintNotes()
         {
             if(index > 0)
             {
+                Console.Clear();
                 DrawTitles();
 
                 for (int i = 0; i < index; i++)
@@ -211,6 +230,11 @@ namespace Homework_07
             }
         }
 
+        /// <summary>
+        /// Метод печати одной заметки на экран, по его индексу в массиве
+        /// </summary>
+        /// <param name="i">Индекс заметки</param>
+        /// <param name="flag">Флаг, что заметка является изменённой, тогда вывести соответствующее сообщение</param>
         public void PrintNote(int i, bool flag)
         {
             Console.Clear();
@@ -218,6 +242,7 @@ namespace Homework_07
             if (flag) { Console.WriteLine("Изменённая запись:"); }
 
             DrawTitles();
+            Console.Write($"{i + 1,3}");
             Notes[i].Print();
         }
 
@@ -225,6 +250,10 @@ namespace Homework_07
 
         #region Загрузка заметок
 
+        /// <summary>
+        /// Загрузка всех заметок из файла имя_владельца-notes.csv
+        /// </summary>
+        /// <param name="pathNotes">Путь к файлу вида $@"{Owner}-notes.csv"</param>
         public void LoadNotes(string pathNotes)
         {
 
@@ -242,7 +271,10 @@ namespace Homework_07
                 }
             }
         }
-
+        /// <summary>
+        /// Загрузка заметок из файла по диапазону дат
+        /// </summary>
+        /// <param name="pathNotes">Путь к файлу с заметками</param>
         public void LoadNotesFromDates(string pathNotes)
         {
             Console.Write("Введите диапазон дат через пробел (DD-MM-YYYY): ");
@@ -267,7 +299,10 @@ namespace Homework_07
             }
 
         }
-
+        /// <summary>
+        /// Загрузка заметок из другого файла
+        /// </summary>
+        /// <param name="pathNotes">Путь к файлу с заметками</param>
         public void LoadNotesFromFile(string pathNotes)
         {
             using (StreamReader sr = new StreamReader(pathNotes))
@@ -287,15 +322,21 @@ namespace Homework_07
         #endregion
 
         #region Дополнительные функции ежедневника
-
+        /// <summary>
+        /// Переменная, выдающая текущее количество записей в ежедневнике
+        /// </summary>
         public int Count { get { return this.index; } }
-
+        /// <summary>
+        /// Открытый метод сохранения текущих значений полей ежедневника
+        /// </summary>
         public void Save() { SavePB(); }
 
         #endregion
 
         #region Закрытые служебные функции
-
+        /// <summary>
+        /// Метод сохранения текущих значений полей ежедневника
+        /// </summary>
         private void SavePB()
         {
             string temp = String.Format("{0},{1},{2},{3}",
@@ -305,7 +346,9 @@ namespace Homework_07
                                         path);
             File.WriteAllText(path, $"{temp}");
         }
-
+        /// <summary>
+        /// Метод перезаписи файла с заметками, используется после каждого действия над записями.
+        /// </summary>
         private void ResaveAllNotes()
         {
             CreateNotesFile();
@@ -327,7 +370,17 @@ namespace Homework_07
                 }
             }
         }
-
+        /// <summary>
+        /// Метод перезагрузки записей из файла в массив, используется после удаления записей для корректной расстановки индексов
+        /// </summary>
+        private void ReloadNotes()
+        {
+            ResaveAllNotes();
+            LoadNotes($@"{Owner}-notes.csv");
+        }
+        /// <summary>
+        /// Метод создания файла с заметками. В файл первоначально записываются заголовки полей заметки.
+        /// </summary>
         private void CreateNotesFile()
         {
             string Path = $@"{Owner}-notes.csv";
@@ -340,7 +393,9 @@ namespace Homework_07
                                           "Дата выхода");
             File.WriteAllText(Path, $"{temp}\n");
         }
-
+        /// <summary>
+        /// Класс сортировки, реализующий интерфейс IComparer. Каждый метод в классе используется в зависимости от выбора поля для сортировки.
+        /// </summary>
         private class SortBy : IComparer<Note>
         {
             public int Compare(Note n1, Note n2)
@@ -404,14 +459,19 @@ namespace Homework_07
             }
 
         }
-
+        /// <summary>
+        /// Метод очистки массива заметок
+        /// </summary>
         private void ClearNotes()
         {
             Array.Clear(Notes, 0, Notes.Length);
             Array.Resize(ref Notes, 1);
             index = 0;
         }
-
+        /// <summary>
+        /// Метод переопределения размера массива заметок
+        /// </summary>
+        /// <param name="Flag"></param>
         private void Resize(bool Flag)
         {
             if (Flag)
@@ -419,7 +479,9 @@ namespace Homework_07
                 Array.Resize(ref this.Notes, this.Notes.Length * 2);
             }
         }
-
+        /// <summary>
+        /// Метод отрисовки заголовков полей заметки.
+        /// </summary>
         private void DrawTitles()
         {
             Console.ForegroundColor = ConsoleColor.Green;
@@ -429,6 +491,12 @@ namespace Homework_07
 
         #endregion
 
+        /// <summary>
+        /// Конструктор ежедневника
+        /// </summary>
+        /// <param name="owner">Имя владельца</param>
+        /// <param name="makeDate">Дата создания</param>
+        /// <param name="Path">Путь к файлу данных ежедневника</param>
         public Planbook(string owner, DateTime makeDate, string Path)
         {
             this.Owner = owner;

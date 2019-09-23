@@ -77,18 +77,20 @@ namespace Homework_07
     {
         #region Основные переменные программы
 
-        static Planbook[] pblist;
+        static Planbook[] pblist; // Массив объектов - ежедневников
 
-        static string pblistcsv = @"pbs.csv";
+        static string pblistcsv = @"pbs.csv"; // Путь к файлу списка ежедневников
 
-        static string Path = $@"";
+        static string Path = $@""; // Переменная пути к файлу заметок. 
 
-        static int ind = ChkCount();
+        static int ind = ChkCount(); // Переменная, получающая значение количества ежедневников
 
         #endregion
 
         #region Главное меню и интерфейс меню ежедневника
-
+        /// <summary>
+        /// Главное меню программы
+        /// </summary>
         static void MainMenu()
         {
             bool q = true;
@@ -125,7 +127,10 @@ namespace Homework_07
 
             }
         }
-
+        /// <summary>
+        /// Главное меню выбранного ежедневника
+        /// </summary>
+        /// <param name="idx">Индекс ежедневника из массива</param>
         static void PBMenu(int idx)
         {
             bool pbQ = true;
@@ -136,7 +141,7 @@ namespace Homework_07
                 {
                     case 1:
                         {
-                            CreateNoteManual();
+                            CreateNoteManual(idx);
                             break;
                         }
                     case 2:
@@ -177,7 +182,8 @@ namespace Homework_07
                     case 8:
                         {
                             pblist[idx].PrintNotes();
-                            Console.ReadLine();
+                            Console.Write("Нажмите любую кнопку, чтобы продолжить:");
+                            Console.ReadKey();
                             break;
                         }
                     case 9:
@@ -194,6 +200,9 @@ namespace Homework_07
 
         #region Создание ежедневника и работа с заметками
 
+        /// <summary>
+        /// Создать новый ежедневник
+        /// </summary>
         static void CreatePlanBook()
         {
             Console.Write("Введите имя владельца: ");
@@ -209,8 +218,11 @@ namespace Homework_07
 
             ind++;
         }
-
-        static void CreateNoteManual()
+        /// <summary>
+        /// Добавить заметку в текущий ежедневник
+        /// </summary>
+        /// <param name="idx">Индекс ежедневника в массиве</param>
+        static void CreateNoteManual(int idx)
         {
             Console.Clear();
 
@@ -234,11 +246,14 @@ namespace Homework_07
 
             DateTime date = DateTime.Parse(Read());
 
-            pblist[ind].AddNote(new Note(title, genre, platforms, complete, date), true);
+            pblist[idx].AddNote(new Note(title, genre, platforms, complete, date), true);
 
             Console.WriteLine($"Запись игры {title} создана.");
         }
-
+        /// <summary>
+        /// Изменить заметку в текущем ежедневнике
+        /// </summary>
+        /// <param name="idx">Индекс ежедневника в массиве</param>
         static void EditNoteManual(int idx)
         {
             Console.Write("Выберите запись: ");
@@ -249,13 +264,18 @@ namespace Homework_07
             pblist[idx].PrintNote(ind, true);
             Console.ReadLine();
         }
-
+        /// <summary>
+        /// Удалить заметку в текущем ежедневнике
+        /// </summary>
+        /// <param name="i">Индекс ежедневника в массиве</param>
         static void DeleteNoteManual(int i)
         {
             Console.Write("Выберите номер записи для удаления: ");
             pblist[i].DeleteNote(int.Parse(Read()));
         }
-
+        /// <summary>
+        /// Загрузить все ежедневники в массив и вывести выбор в главное меню.
+        /// </summary>
         static void LoadPlanBook()
         {
             try
@@ -292,7 +312,11 @@ namespace Homework_07
         #endregion
 
         #region Служебные методы проверки ввода, добавления в файл и переопределение размера массива
-
+        /// <summary>
+        /// Метод переопределения размера массива ежедневников
+        /// </summary>
+        /// <param name="Flag">Флаг, что массив нуждается в изменении размера, 
+        /// если текущий индекс количества заметок больше или равен размеру массива</param>
         static void Resize(bool Flag)
         {
             if (Flag)
@@ -300,7 +324,10 @@ namespace Homework_07
                 Array.Resize(ref pblist, ChkLng() + 1);
             }
         }
-
+        /// <summary>
+        /// Функция проверки количества ежедневников
+        /// </summary>
+        /// <returns></returns>
         static int ChkCount()
         {
             try
@@ -328,7 +355,10 @@ namespace Homework_07
                 return 0;
             }
         }
-
+        /// <summary>
+        /// Функция проверки размера массива ежедневников
+        /// </summary>
+        /// <returns></returns>
         static int ChkLng()
         {
             try
@@ -340,7 +370,10 @@ namespace Homework_07
                 return 0;
             }
         }
-
+        /// <summary>
+        /// Функция чтения с консоли с обработкой исключений
+        /// </summary>
+        /// <returns></returns>
         static string Read()
         {
             try
@@ -352,7 +385,9 @@ namespace Homework_07
                 return "0";
             }
         }
-
+        /// <summary>
+        /// Добавление в файл списка ежедневника новой записи
+        /// </summary>
         static void addToList()
         {
             string data = String.Format("{0} - {1} - {2} - {3}",
@@ -362,7 +397,9 @@ namespace Homework_07
                                         Path.ToString());
             File.AppendAllText(pblistcsv, $"{data} \n");
         }
-
+        /// <summary>
+        /// Метод отрисовки главного меню программы
+        /// </summary>
         static void DrawMenu()
         {
             Console.Clear();
@@ -378,7 +415,10 @@ namespace Homework_07
                               "[3] Выйти из программы.");
             Console.Write("Выбор действия: ");
         }
-
+        /// <summary>
+        /// Метод отрисовки главного меню текущего еждневника
+        /// </summary>
+        /// <param name="idx">Индекс ежедневника в массиве</param>
         static void DrawPBMenu(int idx)
         {
             Console.Clear();
@@ -402,7 +442,9 @@ namespace Homework_07
                               "[9] Выйти в главное меню.\n");
             Console.Write("Выберите действие: ");
         }
-
+        /// <summary>
+        /// Метод отрисовки белой заголовочной панели
+        /// </summary>
         static void DrawWhitePanel()
         {
             Console.BackgroundColor = ConsoleColor.White;
@@ -411,11 +453,13 @@ namespace Homework_07
 
         #endregion
 
+        /// <summary>
+        /// Точка входа в программу
+        /// </summary>
+        /// <param name="args">Массив аргументов</param>
         static void Main(string[] args)
         {
-        MainMenu();    
-        Console.ReadLine();
-
+            MainMenu();    
         }
     }
 }

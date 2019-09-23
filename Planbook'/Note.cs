@@ -71,18 +71,26 @@ namespace Homework_07
     {
         #region Основные поля заметки
 
-        public string GameTitle { get; set; }
+        public string GameTitle { get; set; } // Поле название игры
 
-        public string Genre { get; set; }
+        public string Genre { get; set; } // Поле жанр
 
-        public string Platforms { get; set; }
+        public string Platforms { get; set; } // Поле платформы
 
-        public bool Complete { get; set; }
+        public bool Complete { get; set; } // Поле статуса прохождения игры 
 
-        public DateTime Release { get; set; }
+        public DateTime Release { get; set; } // Дата выхода игры
 
         #endregion
 
+        /// <summary>
+        /// Конструктор заметки
+        /// </summary>
+        /// <param name="title">Название игры</param>
+        /// <param name="genre">Жанр</param>
+        /// <param name="platforms">Платформа</param>
+        /// <param name="complete">Статус пройденности игры</param>
+        /// <param name="date">Дата выхода</param>
         public Note(string title, string genre, string platforms, bool complete, DateTime date)
         {
             this.GameTitle = title;
@@ -91,7 +99,9 @@ namespace Homework_07
             this.Complete = complete;
             this.Release = date;
         }
-
+        /// <summary>
+        /// Метод вывода на экран заметки
+        /// </summary>
         public void Print()
         {
             
