@@ -69,12 +69,19 @@ namespace Homework_07
 {
     struct Note
     {
+        #region Основные поля заметки
+
         public string GameTitle { get; set; }
+
         public string Genre { get; set; }
+
         public string Platforms { get; set; }
+
         public bool Complete { get; set; }
 
         public DateTime Release { get; set; }
+
+        #endregion
 
         public Note(string title, string genre, string platforms, bool complete, DateTime date)
         {
@@ -88,7 +95,7 @@ namespace Homework_07
         public void Print()
         {
             
-           string cOut = Complete == true ? "Да" : "Нет";
+            string cOut = Complete == true ? "Да" : "Нет";
             Console.Write($"{GameTitle, 20} {Genre, 20} {Platforms, 20}");
             Console.ForegroundColor = Complete == true ? ConsoleColor.Green : ConsoleColor.Red;
             Console.Write($" {cOut, 20} ");

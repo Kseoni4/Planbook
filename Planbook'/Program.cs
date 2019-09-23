@@ -1,9 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 #region Задание
 
@@ -61,7 +57,11 @@ using System.Threading.Tasks;
  * |
  * |____Метод загрузки по диапазону дат
  * |
+ * |____Метод загрузки из определённого файла
+ * |
  * |____Метод сортировки по полю
+ * |
+ * |____Куча служебных методов
  * 
  */
 
@@ -75,20 +75,283 @@ namespace Homework_07
 
     class Program
     {
+        #region Основные переменные программы
+
         static Planbook[] pblist;
-        static int ind = 0;
+
         static string pblistcsv = @"pbs.csv";
+
         static string Path = $@"";
+
+        static int ind = ChkCount();
+
+        #endregion
+
+        #region Главное меню и интерфейс меню ежедневника
+
+        static void MainMenu()
+        {
+            bool q = true;
+            byte c = 0;
+            while (q)
+            {
+                DrawMenu();
+
+                c = byte.Parse(Read());
+
+                switch (c)
+                {
+                    case 1:
+                        {
+                            CreatePlanBook();
+                            break;
+                        }
+                    case 2:
+                        {
+                            LoadPlanBook();
+                            break;
+                        }
+                    case 3:
+                        {
+                            q = false;
+                            break;
+                        }
+                    default:
+                        {
+                            Console.Clear();
+                            break;
+                        }
+                }
+
+            }
+        }
+
+        static void PBMenu(int idx)
+        {
+            bool pbQ = true;
+            while (pbQ)
+            {
+                DrawPBMenu(idx);
+                switch (int.Parse(Read()))
+                {
+                    case 1:
+                        {
+                            CreateNoteManual();
+                            break;
+                        }
+                    case 2:
+                        {
+                            pblist[idx].PrintNotes();
+                            EditNoteManual(idx);
+                            break;
+                        }
+                    case 3:
+                        {
+                            pblist[idx].PrintNotes();
+                            DeleteNoteManual(idx);
+                            break;
+                        }
+                    case 4:
+                        {
+                            pblist[idx].LoadNotes($@"{pblist[idx].Owner}-notes.csv");
+                            break;
+                        }
+                    case 5:
+                        {
+                            pblist[idx].LoadNotesFromDates($@"{pblist[idx].Owner}-notes.csv");
+                            break;
+                        }
+                    case 6:
+                        {
+                            Console.Write("Введите путь к файлу или его название: ");
+                            pblist[idx].LoadNotesFromFile($@"{Read()}");
+                            break;
+                        }
+                    case 7:
+                        {
+                            Console.Write($"Выберите поле для сортировки (1.Название, 2.Жанр, 3.Платформы, 4.Пройдена, 5.Дата выхода): ");
+                            pblist[idx].SortNote(int.Parse(Read()));
+                            break;
+
+                        }
+                    case 8:
+                        {
+                            pblist[idx].PrintNotes();
+                            Console.ReadLine();
+                            break;
+                        }
+                    case 9:
+                        {
+                            pbQ = false;
+                            pblist[idx].Save();
+                            break;
+                        }
+                }
+            }
+        }
+
+        #endregion
+
+        #region Создание ежедневника и работа с заметками
+
+        static void CreatePlanBook()
+        {
+            Console.Write("Введите имя владельца: ");
+
+            string owner = Console.ReadLine();
+            Path = $@"{owner}.csv";
+
+            Resize(ind >= ChkLng());
+
+            pblist[ind] = new Planbook(owner, DateTime.Now, Path);
+
+            addToList();
+
+            ind++;
+        }
+
+        static void CreateNoteManual()
+        {
+            Console.Clear();
+
+            Console.Write("Введите название игры: ");
+
+            string title = Read();
+
+            Console.Write("Введите жанр игры: ");
+
+            string genre = Read();
+
+            Console.Write("Введите платформы: ");
+
+            string platforms = Read();
+
+            Console.Write("Пройденна ли игра? [Y/N]: ");
+
+            bool complete = Read() == "Y" ? true : false;
+
+            Console.Write("Введите дату выхода игры (DD-MM-YYYY): ");
+
+            DateTime date = DateTime.Parse(Read());
+
+            pblist[ind].AddNote(new Note(title, genre, platforms, complete, date), true);
+
+            Console.WriteLine($"Запись игры {title} создана.");
+        }
+
+        static void EditNoteManual(int idx)
+        {
+            Console.Write("Выберите запись: ");
+            int ind = int.Parse(Read()) - 1;
+            pblist[idx].PrintNote(ind, false);
+            Console.Write("Выберите поле для редактирования (от 1 до 5): ");
+            pblist[idx].EditNote(int.Parse(Read()), ind);
+            pblist[idx].PrintNote(ind, true);
+            Console.ReadLine();
+        }
+
+        static void DeleteNoteManual(int i)
+        {
+            Console.Write("Выберите номер записи для удаления: ");
+            pblist[i].DeleteNote(int.Parse(Read()));
+        }
+
+        static void LoadPlanBook()
+        {
+            try
+            {
+                using (StreamReader sr = new StreamReader(pblistcsv))
+                {
+                    byte indP = 0;
+                    while (!sr.EndOfStream)
+                    {
+                        string[] pbls = sr.ReadLine().Split(" - ");
+
+                        Resize(int.Parse(pbls[0]) >= ChkLng());
+
+                        pblist[int.Parse(pbls[0])] = new Planbook(pbls[1], Convert.ToDateTime(pbls[2]), pbls[3]);
+                    }
+                    for (int i = 0; i < pblist.Length; i++)
+                    {
+                        Console.WriteLine($"{i + 1} - {pblist[i].Owner} - {pblist[i].MakeDate.ToShortDateString()}");
+                    }
+                    Console.Write("Выберите номер ежедневника: ");
+
+                    indP = byte.Parse(Console.ReadLine());
+
+                    PBMenu(indP - 1);
+
+                }
+            }
+            catch (FileNotFoundException)
+            {
+                Console.WriteLine("Ежедневников не найдено, создайте свой первый!");
+            }
+        }
+
+        #endregion
+
+        #region Служебные методы проверки ввода, добавления в файл и переопределение размера массива
 
         static void Resize(bool Flag)
         {
             if (Flag)
             {
-                Array.Resize(ref pblist, chkLng() + 1);
+                Array.Resize(ref pblist, ChkLng() + 1);
             }
         }
 
-        static int lng = 0;
+        static int ChkCount()
+        {
+            try
+            {
+                if (File.Exists(pblistcsv))
+                {
+                    using (StreamReader sr = new StreamReader(pblistcsv))
+                    {
+                        int count = 0;
+                        while (!sr.EndOfStream)
+                        {
+                            sr.ReadLine();
+                            count++;
+                        }
+                        return count;
+                    }
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            catch(NullReferenceException)
+            {
+                return 0;
+            }
+        }
+
+        static int ChkLng()
+        {
+            try
+            {
+                return pblist.Length;
+            }
+            catch (NullReferenceException)
+            {
+                return 0;
+            }
+        }
+
+        static string Read()
+        {
+            try
+            {
+                return Console.ReadLine();
+            }
+            catch (FormatException)
+            {
+                return "0";
+            }
+        }
 
         static void addToList()
         {
@@ -97,201 +360,60 @@ namespace Homework_07
                                         pblist[ind].Owner,
                                         pblist[ind].MakeDate,
                                         Path.ToString());
-            File.AppendAllText(pblistcsv, $"{data}\n");
+            File.AppendAllText(pblistcsv, $"{data} \n");
         }
 
-        static void CreateNoteManual(Planbook pb)
+        static void DrawMenu()
         {
             Console.Clear();
-
-            Console.Write("Введите название игры: ");
-
-            string title = Console.ReadLine();
-
-            Console.Write("Введите жанр игры: ");
-
-            string genre = Console.ReadLine();
-
-            Console.Write("Введите платформы: ");
-
-            string platforms = Console.ReadLine();
-
-            Console.Write("Пройденна ли игра? [Y/N]: ");
-
-            bool complete = Console.ReadLine() == "Y" ? true : false;
-
-            Console.Write("Введите дату выхода игры (DD-MM-YYYY): ");
-
-            DateTime date = DateTime.Parse(Console.ReadLine());
-
-            pb.AddNote(new Note(title, genre, platforms, complete, date));
-
-            Console.WriteLine($"Запись игры {title} создана.");
+            DrawWhitePanel();
+            Console.Write("Игровой ежедневник пройденных игр ");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write("Ten Games Planbook\n");
+            Console.ResetColor();
+            Console.WriteLine();
+            Console.WriteLine($"Созданных ежедневников {ChkCount()}");
+            Console.WriteLine("[1] Создать новый ежедневник. \n" +
+                              "[2] Загрузить имеющийся. \n" +
+                              "[3] Выйти из программы.");
+            Console.Write("Выбор действия: ");
         }
 
-        static void EditNoteManual(int idx, int i)
+        static void DrawPBMenu(int idx)
         {
-            Console.Write("Выберите запись: ");
+            Console.Clear();
+            DrawWhitePanel();
+            Console.Write("Меню ежедневника владельца ");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write($"{pblist[idx].Owner}. ");
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.Write("Записей ");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write($"{pblist[idx].Count}\n");
+            Console.ResetColor();
+            Console.WriteLine("[1] Добавить запись.\n" +
+                              "[2] Изменить запись.\n" +
+                              "[3] Удалить запись.\n" +
+                              "[4] Загрузить записи.\n" +
+                              "[5] Загрузить записи по дате.\n" +
+                              "[6] Загрузить записи из другого файла.\n" +
+                              "[7] Сортировка записей по полю.\n" +
+                              "[8] Вывести записи.\n" +
+                              "[9] Выйти в главное меню.\n");
+            Console.Write("Выберите действие: ");
         }
 
-        static int chkLng()
+        static void DrawWhitePanel()
         {
-            try
-            {
-                return pblist.Length;
-            }
-            catch(NullReferenceException)
-            {
-                return 0;
-            }
+            Console.BackgroundColor = ConsoleColor.White;
+            Console.ForegroundColor = ConsoleColor.Black;
         }
 
-        static void MainMenu()
-        {
-            bool q = true;
-            byte c = 0;
-
-            while (q)
-            {
-
-                Console.WriteLine("Игровой ежедневник пройденных игр Ten Games Planbook");
-                Console.WriteLine($"Созданных ежедневников {chkLng()}");
-                Console.WriteLine("[1] Создать новый ежедневник. \n" +
-                                  "[2] Загрузить имеющийся. \n" +
-                                  "[3] Выйти из программы.");
-                Console.Write("Выбор действия: ");
-                c = byte.Parse(Console.ReadLine());
-
-                switch (c)
-                {
-                    case 1:
-                        {
-                            Console.Write("Введите имя владельца: ");
-
-                            string owner = Console.ReadLine();
-                            Path = $@"{owner}.csv";
-
-                            Resize(ind >= chkLng());
-
-                            pblist[ind] = new Planbook(owner, DateTime.Now, Path);
-
-                            addToList();
-
-                            ind++;
-
-                            break;
-                        }
-                    case 2:
-                        {
-                            try
-                            {
-                                using (StreamReader sr = new StreamReader(pblistcsv))
-                                {
-                                    byte indP = 0;
-                                    while (!sr.EndOfStream)
-                                    {
-                                        string[] pbls = sr.ReadLine().Split(" - ");
-
-                                        Resize(int.Parse(pbls[0]) >= chkLng());
-
-                                        pblist[int.Parse(pbls[0])] = new Planbook(pbls[1], Convert.ToDateTime(pbls[2]), pbls[3]);
-                                    }
-                                    for (int i = 0; i < pblist.Length; i++)
-                                    {
-                                        Console.WriteLine($"{i} {pblist[i].Owner} {pblist[i].MakeDate}");
-                                    }
-                                    Console.Write("Выберите номер ежедневника: ");
-
-                                    indP = byte.Parse(Console.ReadLine());
-
-                                    PBMenu(pblist[indP], indP);
-
-                                }
-                            }
-                            catch (FileNotFoundException)
-                            {
-                                Console.WriteLine("Ежедневников не найдено, создайте свой первый!");
-                            }
-                            break;
-                        }
-                    case 3:
-                        {
-                            q = false;
-                            break;
-                        }
-                }
-
-            }
-        }
-
-        static void PBMenu(Planbook pb, int idx)
-        {
-            bool pbQ = true;
-            Planbook pbc = pb;
-            while(pbQ)
-            {
-                Console.Clear();
-                Console.WriteLine($"Меню ежедневника владельца {pb.Owner}. Записей {pb.Count}");
-                Console.WriteLine("[1] Добавить запись.\n" +
-                                  "[2] Изменить запись.\n" +
-                                  "[3] Удалить запись.\n" +
-                                  "[4] Загрузить записи.\n" +
-                                  "[5] Загрузить записи по дате.\n" +
-                                  "[6] Сортировка записей по полю.\n" +
-                                  "[7] Вывести записи.\n" +
-                                  "[8] Выйти в главное меню.\n");
-                Console.Write("Выберите действие: ");
-                switch (int.Parse(Console.ReadLine()))
-                {
-                    case 1:
-                        {
-                            CreateNoteManual(pbc);
-                            break;
-                        }
-                    case 2:
-                        {
-                            pb.PrintNotes();
-                            EditNoteManual(idx, 0);
-                            break;
-                        }
-                    case 3:
-                        {
-                            pb.PrintNotes();
-                            pb.DeleteNote();
-                            break;
-                        }
-                    case 4:
-                        {
-                            pb.LoadNotes();
-                            break;
-                        }
-                    case 5:
-                        {
-                            pb.LoadNotesFromDates();
-                            break;
-                        }
-                    case 6:
-                        {
-                            pb.SortNote();
-                            break;
-                        }
-                    case 7:
-                        {
-                            pb.PrintNotes();
-                            break;
-                        }
-                    case 8:
-                        {
-                            pbQ = false;
-                            break;
-                        }
-                }
-            }
-        }
+        #endregion
 
         static void Main(string[] args)
         {
-            MainMenu();    
+        MainMenu();    
         Console.ReadLine();
 
         }
